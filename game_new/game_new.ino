@@ -9,10 +9,13 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 int playerPos = 1;
 int obstaclePos = 15;
+int powerUpPos = -1;
 bool isJumping = false;
 int jumpCounter = 0;
 int score = 0;
 int iSecret;
+bool hasPowerUp = false;
+int powerUpCounter = 0;
 
 int dl = 200;
 int posSCORE = 15;
@@ -44,29 +47,59 @@ void loop() {
   if (iSecret == 0 && obstaclePos < 0) {
     obstaclePos = 15;
     score++;
-  }else if (iSecret == 1 && obstaclePos < 0){
+  } else if (iSecret == 1 && obstaclePos < 0){
     iSecret--;
-  }else if (iSecret == 2 && obstaclePos < 0){
+  } else if (iSecret == 2 && obstaclePos < 0){
     iSecret--;
   }
 
-  // Check collision
-  if(iSecret == 0 && playerPos == 1 && obstaclePos == 1 && !isJumping){
-      gameOver();
-  }else if (iSecret == 1 && playerPos == 1 && !isJumping){
-      if(obstaclePos == 1 || obstaclePos == 0){
-          gameOver();
-      }
-  }else if (iSecret == 2 && playerPos == 1 && !isJumping){
-      if(obstaclePos == 1 || obstaclePos == 0 || obstaclePos == -1){
-          gameOver();
-      }
+  // Generate power-up
+  if (powerUpPos < 0 && rand() % 50 == 0) { // Randomly generate power-up
+    powerUpPos = 15;
   }
+
+  if (powerUpPos >= 0) {
+    powerUpPos--;
+    if (powerUpPos < 0 && !hasPowerUp) {
+      powerUpPos = -1; // Remove power-up when it goes off screen
+    }
+  }
+
+  // Check collision with obstacle
+  if(iSecret == 0 && playerPos == 1 && obstaclePos == 1 && !isJumping && !hasPowerUp) {
+    gameOver();
+  } else if (iSecret == 1 && playerPos == 1 && !isJumping && !hasPowerUp) {
+    if(obstaclePos == 1 || obstaclePos == 0) {
+      gameOver();
+    }
+  } else if (iSecret == 2 && playerPos == 1 && !isJumping && !hasPowerUp) {
+    if(obstaclePos == 1 || obstaclePos == 0 || obstaclePos == -1) {
+      gameOver();
+    }
+  }
+
+  // Check collision with power-up
+  if (powerUpPos == playerPos && !isJumping) {
+    hasPowerUp = true;
+    powerUpCounter = 50; // Power-up lasts for 50 cycles
+    powerUpPos = -1; // Remove power-up after collecting
+  }
+
   // Update display
   lcd.clear();
-  lcd.setCursor(posSCORE, 0);
-  lcd.print(score);
-  
+  lcd.setCursor(8, 0);
+  lcd.print(powerUpCounter);
+  if (score >= 0 && score < 10) {
+    lcd.setCursor(posSCORE, 0);
+    lcd.print(score);
+  } else if (score >= 10 && score < 100) {
+    lcd.setCursor(posSCORE - 1, 0);
+    lcd.print(score);
+  } else if (score >= 100 && score < 1000) {
+    lcd.setCursor(posSCORE - 2, 0);
+    lcd.print(score);
+  }
+
 
   lcd.setCursor(playerPos, 1);
   if (isJumping) {
@@ -78,28 +111,40 @@ void loop() {
   }
 
   lcd.setCursor(obstaclePos, 1);
-  if(obstaclePos == 15){
-      iSecret = rand() % 3;
+  if (obstaclePos == 15) {
+    iSecret = rand() % 3;
   }
 
-  if (iSecret == 0){
-      lcd.print("#");
-    } else if (iSecret == 1) {
-      lcd.print("##");
-    } else if (iSecret == 2) {
-      lcd.print("###");
-    } 
+  if (iSecret == 0) {
+    lcd.print("#");
+  } else if (iSecret == 1) {
+    lcd.print("##");
+  } else if (iSecret == 2) {
+    lcd.print("###");
+  }
+
+  if (powerUpPos >= 0) {
+    lcd.setCursor(powerUpPos, 1);
+    lcd.print("*");
+  }
+
+  if (hasPowerUp) {
+    powerUpCounter--;
+    if (powerUpCounter <= 0) {
+      hasPowerUp = false;
+    }
+  }
 
   delay(dl);
   if (score == 10) {
-        dl = 150;
-    } else if (score == 20) {
-        dl = 100;
-    } else if (score == 30) {
-        dl = 75;
-    } else if (score == 50) {
-        dl = 50;
-    }
+    dl = 150;
+  } else if (score == 20) {
+    dl = 100;
+  } else if (score == 30) {
+    dl = 75;
+  } else if (score == 50) {
+    dl = 50;
+  }
 }
 
 void waitForButtonPress() {
@@ -124,8 +169,11 @@ void startGame() {
   score = 0;
   playerPos = 1;
   obstaclePos = 15;
+  powerUpPos = -1;
   isJumping = false;
   jumpCounter = 0;
+  hasPowerUp = false;
+  powerUpCounter = 0;
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Jump Man Game");
