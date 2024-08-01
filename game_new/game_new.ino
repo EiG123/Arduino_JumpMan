@@ -147,7 +147,7 @@ void loop() {
     lcd.print("###");
   }
 
-  if (powerUpPos >= 0) {
+  if (powerUpPos >= 0 && obstaclePos != powerUpPos) {
     lcd.setCursor(powerUpPos, 1);
     lcd.write(byte(1));
   }
@@ -168,6 +168,18 @@ void loop() {
     dl = 75;
   } else if (score == 50) {
     dl = 50;
+  } else if (score == 100) {
+    dl = 25;
+  } else if (score == 500){
+    dl = 20;
+  } else if (score == 750){
+    dl = 15;
+  } else if (score == 800){
+    dl = 10;
+  } else if (score == 900){
+    dl = 5;
+  } else if (score == 990){
+    dl = 1;
   }
 }
 
