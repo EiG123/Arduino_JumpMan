@@ -7,6 +7,28 @@
 
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
+byte customPlayer[] = {
+  B01110,
+  B01010,
+  B01110,
+  B10100,
+  B01110,
+  B00101,
+  B01010,
+  B10001
+};
+
+byte customPowerUp[] = {
+  B11111,
+  B00100,
+  B01110,
+  B01010,
+  B01010,
+  B01110,
+  B00100,
+  B00100
+};
+
 int playerPos = 1;
 int obstaclePos = 15;
 int powerUpPos = -1;
@@ -24,6 +46,11 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   lcd.init();
   lcd.backlight();
+  
+  // สร้างตัวละครที่กำหนดเอง
+  lcd.createChar(0, customPlayer);
+  lcd.createChar(1, customPowerUp);
+  
   startGame();
 }
 
@@ -54,7 +81,7 @@ void loop() {
   }
 
   // Generate power-up
-  if (powerUpPos < 0 && rand() % 50 == 0) { // Randomly generate power-up
+  if (powerUpPos < 0 && rand() % 80 == 0) { // Randomly generate power-up
     powerUpPos = 15;
   }
 
@@ -87,8 +114,6 @@ void loop() {
 
   // Update display
   lcd.clear();
-  lcd.setCursor(8, 0);
-  lcd.print(powerUpCounter);
   if (score >= 0 && score < 10) {
     lcd.setCursor(posSCORE, 0);
     lcd.print(score);
@@ -100,14 +125,13 @@ void loop() {
     lcd.print(score);
   }
 
-
   lcd.setCursor(playerPos, 1);
   if (isJumping) {
     lcd.print(" ");
     lcd.setCursor(playerPos, 0);
-    lcd.print("O");
+    lcd.write(byte(0)); // ใช้ customPlayer
   } else {
-    lcd.print("O");
+    lcd.write(byte(0)); // ใช้ customPlayer
   }
 
   lcd.setCursor(obstaclePos, 1);
@@ -125,7 +149,7 @@ void loop() {
 
   if (powerUpPos >= 0) {
     lcd.setCursor(powerUpPos, 1);
-    lcd.print("*");
+    lcd.write(byte(1));
   }
 
   if (hasPowerUp) {

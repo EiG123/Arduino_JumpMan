@@ -5,6 +5,17 @@
 
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
+byte customPlayer[] = {
+  B01110,
+  B01010,
+  B01110,
+  B10100,
+  B01110,
+  B00101,
+  B01010,
+  B10001
+};
+
 void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   lcd.init();
