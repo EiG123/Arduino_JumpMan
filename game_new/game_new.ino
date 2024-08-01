@@ -31,11 +31,13 @@ byte customPowerUp[] = {
 
 int playerPos = 1;
 int obstaclePos = 15;
+int obstaclePos1 = 20;
 int powerUpPos = -1;
 bool isJumping = false;
 int jumpCounter = 0;
 int score = 0;
 int iSecret;
+int iSecret1;
 bool hasPowerUp = false;
 int powerUpCounter = 0;
 
@@ -80,8 +82,20 @@ void loop() {
     iSecret--;
   }
 
+  if(score >= 10){
+    obstaclePos1--;
+    if (iSecret1 == 0 && obstaclePos1 < 0) {
+      obstaclePos1 = 20;
+      score++;
+    } else if (iSecret1 == 1 && obstaclePos1 < 0){
+      iSecret1--;
+    } else if (iSecret1 == 2 && obstaclePos1 < 0){
+      iSecret1--;
+    }
+  }
+
   // Generate power-up
-  if (powerUpPos < 0 && rand() % 80 == 0) { // Randomly generate power-up
+  if (powerUpPos < 0 && rand() % 95 == 0) { // Randomly generate power-up
     powerUpPos = 15;
   }
 
@@ -93,14 +107,18 @@ void loop() {
   }
 
   // Check collision with obstacle
-  if(iSecret == 0 && playerPos == 1 && obstaclePos == 1 && !isJumping && !hasPowerUp) {
+  if (iSecret == 0 && playerPos == 1 && obstaclePos == 1 && !isJumping && !hasPowerUp) {
     gameOver();
   } else if (iSecret == 1 && playerPos == 1 && !isJumping && !hasPowerUp) {
-    if(obstaclePos == 1 || obstaclePos == 0) {
+    if (obstaclePos == 1 || obstaclePos == 0) {
+      gameOver();
+    } else if (obstaclePos1 == 1 || obstaclePos1 == 0) {
       gameOver();
     }
   } else if (iSecret == 2 && playerPos == 1 && !isJumping && !hasPowerUp) {
-    if(obstaclePos == 1 || obstaclePos == 0 || obstaclePos == -1) {
+    if (obstaclePos == 1 || obstaclePos == 0 || obstaclePos == -1) {
+      gameOver();
+    } else if (obstaclePos1 == 1 || obstaclePos1 == 0 || obstaclePos1 == -1) {
       gameOver();
     }
   }
@@ -147,7 +165,20 @@ void loop() {
     lcd.print("###");
   }
 
-  if (powerUpPos >= 0 && obstaclePos != powerUpPos) {
+  lcd.setCursor(obstaclePos1, 1);
+  if (obstaclePos1 == 20) {
+    iSecret1 = rand() % 3;
+  }
+
+  if (iSecret1 == 0) {
+    lcd.print("#");
+  } else if (iSecret1 == 1) {
+    lcd.print("##");
+  } else if (iSecret1 == 2) {
+    lcd.print("###");
+  }
+
+  if (powerUpPos >= 0 && obstaclePos != powerUpPos && obstaclePos1 != powerUpPos) {
     lcd.setCursor(powerUpPos, 1);
     lcd.write(byte(1));
   }
@@ -184,7 +215,7 @@ void loop() {
 }
 
 void waitForButtonPress() {
-  while (digitalRead(BUTTON_PIN) == HIGH) {
+  while (digitalRead(BUTTON_PIN) == LOW) {
     // Wait until the button is pressed
   }
 }
@@ -205,6 +236,7 @@ void startGame() {
   score = 0;
   playerPos = 1;
   obstaclePos = 15;
+  obstaclePos1 = 20;
   powerUpPos = -1;
   isJumping = false;
   jumpCounter = 0;
