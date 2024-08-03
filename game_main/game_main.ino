@@ -32,12 +32,14 @@ byte customPowerUp[] = {
 int playerPos = 1;
 int obstaclePos = 15;
 int obstaclePos1 = 20;
+int obstaclePosUp = 18;
 int powerUpPos = -1;
 bool isJumping = false;
 int jumpCounter = 0;
 int score = 0;
 int iSecret;
 int iSecret1;
+int iSecretUp;
 bool hasPowerUp = false;
 int powerUpCounter = 0;
 
@@ -71,8 +73,6 @@ void loop() {
     }
   }
 
-  
-
   // Generate power-up
   if (powerUpPos < 0 && rand() % 95 == 0) { // Randomly generate power-up
     powerUpPos = 15;
@@ -86,7 +86,7 @@ void loop() {
   }
 
   // Check collision with obstacles
-  if (checkCollision(obstaclePos, iSecret) || checkCollision(obstaclePos1, iSecret1)) {
+  if (checkCollision(obstaclePos, iSecret) || checkCollision(obstaclePos1, iSecret1) || checkCollisionUp(obstaclePosUp, iSecretUp)) {
     gameOver();
   }
 
@@ -122,9 +122,11 @@ void loop() {
   // Move the obstacles
   moveObstacle(obstaclePos, iSecret);
   if(score >= 10){
+
     moveObstacle(obstaclePos1, iSecret1);
   }
-
+  //moveObstacleUp(obstaclePosUp, iSecretUp);
+  
 
   if (powerUpPos >= 0 && obstaclePos != powerUpPos && obstaclePos1 != powerUpPos) {
     lcd.setCursor(powerUpPos, 1);
@@ -185,6 +187,7 @@ void startGame() {
   playerPos = 1;
   obstaclePos = 15;
   obstaclePos1 = 20;
+  obstaclePosUp = 18;
   powerUpPos = -1;
   isJumping = false;
   jumpCounter = 0;
@@ -217,11 +220,37 @@ void moveObstacle(int &obstaclePos, int &iSecret) {
   }
 }
 
+void moveObstacleUp(int &obstaclePos, int &iSecret) {
+  obstaclePos--;
+  if (obstaclePos < 0 && iSecret == 0) {
+    obstaclePos = 15;
+    iSecret = rand() % 2;
+    score++;
+  } else if (obstaclePos < 0 && iSecret == 1) {
+    obstaclePos = 15;
+    iSecret = rand() % 2;
+  }
+
+  lcd.setCursor(obstaclePos, 0);
+  if(iSecret == 0){
+    lcd.print("#");
+  }
+  lcd.setCursor(8, 1);
+  lcd.print(iSecret);
+}
+
 bool checkCollision(int obstaclePos, int iSecret) {
   for (int i = 0; i <= iSecret; i++) {
     if (playerPos == 1 && obstaclePos + i == 1 && !isJumping && !hasPowerUp) {
       return true;
     }
+  }
+  return false;
+}
+
+bool checkCollisionUp(int obstaclePos, int iSecret){
+  if (playerPos == 1 && obstaclePos == 1 && isJumping && !hasPowerUp) {
+      return true;
   }
   return false;
 }
